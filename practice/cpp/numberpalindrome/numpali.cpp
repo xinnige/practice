@@ -3,7 +3,7 @@
 
 int get_digit(int number){
     int digit = 1;
-    while (number/digit > 10){
+    while (number/digit >= 10){
         digit *= 10;
     }
     printf("%d is %d digits.\n", number, digit);
@@ -27,9 +27,13 @@ bool is_palindrome(int number)
        number = number%digits;
        number = number/10;
        digits /= 100;
-       if (digits)
-       first_digit = number/digits;
-       last_digit = number%10;
+       if (digits){
+            first_digit = number/digits;
+            last_digit = number%10;
+       }
+       if (first_digit != last_digit){
+            return false;
+       }
        print_numbers(digits,number,first_digit,last_digit);
        if (number < 100){
            return true;
