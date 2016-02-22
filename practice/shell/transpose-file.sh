@@ -1,26 +1,23 @@
 #!/bin/bash
 
-declare -A data
-colth=1
-
-while read line
-do
-    rowth=1
-    for col in $line
-    do
-        data[$rowth,$colth]=$col
-        let rowth=$rowth+1
-    done
-    let colth=$colth+1
-done < file.txt
-
-for i in `seq 1 $rowth`
-do
-    for j in `seq 1 $colth`
-    do
-        echo -n ${data[$i,$j]}
-        echo -n " "
-    done 
-    echo ""
-done
-
+awk '
+    {
+        for (i=1; i<=NF; i++)
+        {   
+            if (line[i] == "")
+            {
+                line[i] = $i
+            }
+            else
+            {
+                line[i] = line[i]" "$i
+            }
+        }
+    }
+    END{
+        for (i=1; i<=NF; i++ )
+        {
+            print line[i]
+        }
+    }
+    ' file.txt
