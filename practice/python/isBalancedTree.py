@@ -8,11 +8,14 @@ class TreeNode(object):
         self.right = None
 
 class Solution(object):
+    def __init__(self):
+        self.result = True
+
     def cal_depth(self, root):
         leftdepth = 0
         rightdepth = 0
         if root is None:
-            return -1
+            return
         if root.left:
             if hasattr(root.left, "depth"):
                 leftdepth = root.left.depth
@@ -23,6 +26,11 @@ class Solution(object):
                 rightdepth = root.right.depth
             else:
                 rightdepth = self.cal_depth(root.right)
+        if leftdepth is None or rightdepth is None:
+            return
+        if leftdepth > rightdepth + 1  or leftdepth < rightdepth - 1:
+            self.result = False
+            return
         depth = max(leftdepth, rightdepth)+1
         setattr(root, "depth", depth)
         return depth
@@ -30,7 +38,7 @@ class Solution(object):
     def _isBalanced(self, node):
         isBalanced = True
         if node is None:
-            return False
+            return True
         if node.left and node.right:
             if node.left.depth > node.right.depth + 1 or node.left.depth < node.right.depth - 1:
                 return False
@@ -51,9 +59,7 @@ class Solution(object):
         :rtype: bool
         """
         self.cal_depth(root)
-        return self._isBalanced(root)
-        
-
+        return self.result
 
 
 sol = Solution()
