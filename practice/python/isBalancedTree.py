@@ -51,30 +51,38 @@ class Solution(object):
             if node.depth > 2:
                 return False
         return True
-        
-        
+
+    def maxDepth(self, root, height):
+        if root is None:
+            return height
+
+        leftHeight = self.maxDepth(root.left, height + 1)
+        rightHeight = self.maxDepth(root.right, height + 1)
+        if leftHeight < 0 or rightHeight < 0 or abs(leftHeight - rightHeight) > 1:
+            return -1
+        return max(leftHeight, rightHeight)
+
     def isBalanced(self, root):
         """
         :type root: TreeNode
         :rtype: bool
         """
-        self.cal_depth(root)
-        return self.result
+        return self.maxDepth(root, 0) >= 0
 
 
 sol = Solution()
 tree = buildtree([6,2,8,0,4,7,9,None,1,3,5])
 print sol.isBalanced(tree)
-preOrder(tree)
+#preOrder(tree)
  
 tree = buildtree([1])
 print sol.isBalanced(tree)
-preOrder(tree)
+#preOrder(tree)
 
 tree = buildtree([])
 print sol.isBalanced(tree)
-preOrder(tree)
+#preOrder(tree)
 
 tree = buildtree([1,2,3,4,5,None,None,8,9,None,None,None,None,None,None,10])
 print sol.isBalanced(tree)
-preOrder(tree)
+#preOrder(tree)
