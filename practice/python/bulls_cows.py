@@ -7,19 +7,21 @@ class Solution(object):
         """
         # calculate bulls
         bulls = 0
+        totals = 0
         s_bases = [0]*10
-        g_bases = [0]*10
-        for index in range(len(secret)):
-            if secret[index] == guess[index]:
-                bulls += 1
-            else:
-                s_bases[int(secret[index])] += 1        
-                g_bases[int(guess[index])] += 1        
-        
-        # calculate cows
-        cows = sum(map(min,zip(s_bases, g_bases)))
+        for s in secret:
+            s_bases[ord(s)-48] += 1
+        print s_bases
 
-        return "A%dB%d" % (bulls, cows)
+        for i in range(len(secret)):
+            if secret[i] == guess[i]:
+                bulls += 1
+
+            s_bases[ord(guess[i])-48] -= 1
+            if s_bases[ord(guess[i])-48] >= 0:
+                totals += 1
+
+        return "A%dB%d" % (bulls, totals-bulls)
 
 
 sol = Solution()
