@@ -5,26 +5,19 @@ class Solution(object):
         :type guess: str
         :rtype: str
         """
-        slist = list(secret)
-        glist = list(guess)
-
         # calculate bulls
         bulls = 0
-        for index in range(len(slist)):
-            if slist[index] == glist[index]:
+        s_bases = [0]*10
+        g_bases = [0]*10
+        for index in range(len(secret)):
+            if secret[index] == guess[index]:
                 bulls += 1
-                slist[index] = None
-                glist[index] = None
+            else:
+                s_bases[int(secret[index])] += 1        
+                g_bases[int(guess[index])] += 1        
         
-        print slist, glist
         # calculate cows
-        cows = 0
-        for index in range(len(glist)):
-            if glist[index] is not None:
-                if glist[index] in slist:
-                    sindex = slist.index(glist[index])
-                    slist[sindex] = None
-                    cows += 1
+        cows = sum(map(min,zip(s_bases, g_bases)))
 
         return "A%dB%d" % (bulls, cows)
 
