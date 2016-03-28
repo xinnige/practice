@@ -32,7 +32,13 @@ def buildInterList(arr1, arr2, arr3):
 
 def printList(head):
     p = head
+    read = []
     while p is not None:
+        if p in read:
+            print p.val
+            print "Detected: cycle! Print Finish"
+            return
+        read.append(p)
         print p.val, "->", 
         p = p.next
     print "None"

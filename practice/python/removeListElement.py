@@ -16,15 +16,12 @@ class Solution(object):
         previous = ListNode(None)
         previous.next = head
         source = previous
-        current = head
-        while current is not None:
-            if current.val == val:
-                current = current.next
+        while previous.next is not None:
+            if previous.next.val == val:
+                previous.next = previous.next.next
                 continue
-            previous.next = current
-            previous = current
-            current = current.next
-        previous.next = current
+            previous = previous.next
+ 
         return source.next 
         
 sol = Solution()

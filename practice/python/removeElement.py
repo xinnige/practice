@@ -1,7 +1,7 @@
-from wrapper import funcwrapper
+from wrapper import func_wrapper
 
 class Solution(object):
-    @funcwrapper
+    @func_wrapper
     def removeElement(self, nums, val):
         """
         :type nums: List[int]
