@@ -1,22 +1,18 @@
 class Solution(object):
-    def numSquares(self, n):
-        """
-        :type n: int
-        :rtype: int
-        """
-        maxSquare = int(n ** 0.5)
+    def __init__(self):
+        self.dynamic_map = [0]    
 
-        dynamic_map=range(n+1)
-        print dynamic_map
-        for i in range(1, maxSquare):
-            for j in range(1, n+1):
-                if j >= (i+1)**2:
-                    dynamic_map[j] = min(dynamic_map[j], dynamic_map[j-(i+1)**2]+1)
-            print dynamic_map
-        return dynamic_map[-1]
-   
-       
+    def numSquares(self, n):
+        if len(self.dynamic_map) <= n:
+            maxSquare = int(n ** 0.5)
+            items = [(i+1)**2 for i in range(maxSquare)]
+            for i in range(len(self.dynamic_map), n+1):
+                self.dynamic_map.append(min(1+self.dynamic_map[i-square] for square in items if square <= i))
+
+        return self.dynamic_map[n]  
+
 sol = Solution()
 print sol.numSquares(17)
+print sol.dynamic_map
 
  
