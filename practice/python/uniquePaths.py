@@ -1,14 +1,19 @@
 class Solution(object):
-    def helper(self, m , n):
-        if m == 1 and n == 1:
-            return 0 
-        if m == 1:
-            return 1
-        if m == 2:
-            return n
-        if m == n:
-            return 2 * self.helper(m-1, n)
-        return self.helper(m-1 ,n) + self.helper(m, n-1)
+    def __init__(self):
+        self.pathmap = None 
+
+    def helper(self, m, n):
+        self.pathmap = list() 
+        self.pathmap.append([1]*n)
+        for row in range(1, m):
+            self.pathmap.append([1]+[0]*(n-1))
+
+        for r in range(1, m):
+            for c in range(1, n):
+                self.pathmap[r][c] = self.pathmap[r-1][c] + self.pathmap[r][c-1]
+
+        # print2DArray(self.pathmap, m, n) 
+
 
     def uniquePaths(self, m, n):
         """
@@ -16,11 +21,16 @@ class Solution(object):
         :type n: int
         :rtype: int
         """
-        if m <= n:
-            return self.helper(m, n)
-        else:
-            return self.helper(n, m)
+        self.helper(m, n)
+        return self.pathmap[m-1][n-1]
           
+
+def print2DArray(array, m, n):
+    for i in range(m):
+        for j in range(n):
+            print array[i][j], 
+        print
+
 
 sol = Solution()
 print sol.uniquePaths(1,2)
@@ -30,4 +40,5 @@ print sol.uniquePaths(3,3)
 print sol.uniquePaths(3,4)
 print sol.uniquePaths(4,4)
 print sol.uniquePaths(4,5)
+print sol.uniquePaths(5,5)
 print sol.uniquePaths(12,23)
