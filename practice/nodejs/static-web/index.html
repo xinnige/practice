@@ -1,0 +1,36 @@
+<html lang = "en" >
+   <head>
+      <link rel = "stylesheet"
+         href = "https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.1.5/angular-material.min.css">
+      <link rel = "stylesheet"
+         href = "basic.css">
+      <script src = "https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular.min.js"></script>
+      <script src = "https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular-animate.min.js"></script>
+      <script src = "https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular-aria.min.js"></script>
+      <script src = "https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular-messages.min.js"></script>
+      <script src = "https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.1.5/angular-material.min.js"></script>
+      <script src = "menu.js"></script>
+   </head>
+   
+   <body ng-app="demoBasic" ng-cloak>
+
+      <md-content class="md-padding" ng-controller="BasicDemoCtrl as ctrl">
+        <md-nav-bar
+          md-selected-nav-item="currentNavItem"
+          nav-bar-aria-label="navigation projects">
+          <md-nav-item md-nav-click="goto('page1')" ng-repeat="(level1, level1_item) in ctrl.project_types" name="{{ level1 }}">
+            {{ level1 }}
+          </md-nav-item>
+         
+        </md-nav-bar>
+
+        <div ng-repeat="(level1, level1_item) in ctrl.project_types" >
+          <div class="ext-content" ng-show="level1 == currentNavItem">
+            {{ level1_item}}
+          </div>
+        </div>
+
+      </md-content>
+
+   </body>
+</html>
