@@ -43,12 +43,11 @@ func sortedSquares(A []int) []int {
 	for i := range A {
 		A[i] = A[i] * A[i]
 	}
-	quickSort(A, 0, len(A)-1)
+	quickSort(A)
 	return A
 }
 
 func main() {
-
 	testcases := [][]int{
 		[]int{-4, -1, 0, 3, 10},
 		// []int{},

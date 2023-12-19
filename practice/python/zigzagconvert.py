@@ -29,7 +29,7 @@ class Solution:
 
 if __name__ == "__main__":
     sol = Solution()
-    print sol.convert("PAYPALISHIRING",3)
-    print sol.convert("PAYPALISHIRING",4)
-    print sol.convert("PAYPALISHIRING",2)
-    print sol.convert("PAYPALISHIRING",1)
+    print (sol.convert("PAYPALISHIRING",3))
+    print (sol.convert("PAYPALISHIRING",4))
+    print (sol.convert("PAYPALISHIRING",2))
+    print (sol.convert("PAYPALISHIRING",1))

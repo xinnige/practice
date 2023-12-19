@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestQuickSort(t *testing.T) {
@@ -15,7 +16,7 @@ func TestQuickSort(t *testing.T) {
 		{[]int{9, 9, 4, 1}, []int{1, 4, 9, 9}},
 	}
 	for _, tc := range testcases {
-		quickSort(tc.input, 0, len(tc.input)-1)
+		quickSort(tc.input)
 		assert.Equal(t, tc.expect, tc.input)
 	}
 }
