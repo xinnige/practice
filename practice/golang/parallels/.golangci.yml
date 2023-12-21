@@ -1,0 +1,23 @@
+linters:
+  disable:
+    - deadcode
+    # - unused
+    - ineffassign
+    - varcheck
+    - gosimple
+    - forbidigo
+issues:
+  exclude-rules:
+    - path: \.go
+      linters:
+        - errcheck
+      text:  .Write` is not checked
+    - path: \.go
+      linters:
+        - staticcheck
+      text: jwt.StandardClaims
+run:
+  skip-files:
+    - ".*_test\\.go$"
+    - ".*_mock\\.go$"
+    - "cmd/.*/.*\\.go$"
