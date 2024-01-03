@@ -16,6 +16,8 @@ def quickSort(arr, begin, end):
     if end > i+1:
         quickSort(arr, i+1, end)
 
+
+# no duplicated number
 numbers = [2,5,4,1,7,9,3,8,0,6]
 quickSort(numbers,0,len(numbers)-1)
-print numbers
+print (numbers)
