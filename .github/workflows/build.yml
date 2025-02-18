@@ -1,0 +1,106 @@
+on:
+  push:
+    branches:
+      - main
+
+name: build-dev
+
+jobs:
+  linux_build:
+    name: Build packages
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    # prevent endless github action loop
+    if: ${{ github.event.head_commit.committer.name != 'github-actions[bot]' }}
+    steps:
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y gzip wireguard-tools
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: armv7-unknown-linux-musleabihf
+          override: true
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: aarch64-unknown-linux-musl
+          override: true
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-directories: "~/.cargo/bin/"
+      - run: |
+          curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+      - uses: actions-rs/cargo@v1
+        with:
+          command: binstall
+          args: -y cargo-get
+      - uses: actions-rs/cargo@v1
+        with:
+          command: binstall
+          args: -y cargo-edit
+      - uses: actions-rs/cargo@v1
+        with:
+          command: install
+          args: zipsign
+
+      - name: Get rust that have changed
+        id: changed-files-yaml
+        uses: tj-actions/changed-files@v44
+        with:
+          files_yaml: |
+            rust:
+              - rust/test/src/**
+
+      - name: Version bump
+        if: steps.changed-files-yaml.outputs.rust_any_changed == 'true'
+        run: |
+          cargo set-version --bump patch -p test --manifest-path ./practice/rust/test/Cargo.toml
+          echo "COMMIT_VERSION=$(cargo-get --entry rust/test/Cargo.toml package.version)" >> $GITHUB_ENV
+          echo "RUST_COMMIT_VERSION=$(cargo-get --entry rust/test/Cargo.toml package.version)" >> $GITHUB_ENV
+
+      # commit bump version
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        if: steps.changed-files-yaml.outputs.rust_any_changed == 'true'
+        with:
+          commit_message: "[rust] version update: ${{ env.COMMIT_VERSION }}"
+
+      - name: Tag on rust
+        if: steps.changed-files-yaml.outputs.rust_any_changed == 'true'
+        id: tag_version_rust
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          custom_tag: ${{ env.RUST_COMMIT_VERSION }}
+          tag_prefix: rust-
+
+      - uses: actions-rs/cargo@v1
+        if: steps.changed-files-yaml.outputs.rust_any_changed == 'true'
+        with:
+          use-cross: true
+          command: build
+          args: --manifest-path ./practice/rust/test/Cargo.toml
+
+      - name: Run UPX
+        if: steps.changed-files-yaml.outputs.rust_any_changed == 'true'
+        uses: crazy-max/ghaction-upx@v2
+        with:
+          version: latest
+          files: |
+            ./practice/rust/test/target/debug/test
+          args: -q --brute
+
+      - name: Compress binary
+        if: steps.changed-files-yaml.outputs.rust_any_changed == 'true'
+        run: |
+          mkdir -p dist
+          gzip -c ./practice/rust/test/target/debug/test > dist/test-${{ env.RUST_VERSION }}.gz
+          echo -n "${{ secrets.SIGN_PRIV }}" | base64 -d > sign_priv.key
+          ~/.cargo/bin/zipsign sign tar dist/test-${{ env.RUST_VERSION }}.gz sign_priv.key

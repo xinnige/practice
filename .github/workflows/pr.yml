@@ -1,0 +1,78 @@
+on:
+  pull_request:
+    branches:
+      - master
+
+name: Pull request validation
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    name: Run build and unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y gzip wireguard-tools redis-server jq
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - name: verify if all json files are valid
+        run: |
+          find . -name "*.json" | xargs -n 1 jq . &>/dev/null
+
+      - run: |
+          curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+      - uses: actions-rs/cargo@v1
+        with:
+          command: binstall
+          args: -y cargo-llvm-cov
+
+      - uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --manifest-path ./practice/rust/test/Cargo.toml -- --check
+
+      - uses: actions-rs/cargo@v1
+        with:
+          command: llvm-cov
+          args: --manifest-path ./practice/rust/test/Cargo.toml --all-features
+
+      - id: report
+        run: |
+          cargo llvm-cov report --summary-only --manifest-path ./practice/rust/test/Cargo.toml> report.txt
+
+      - id: coverage_check
+        run: |
+          ACTUAL=$(cargo llvm-cov report --manifest-path ./practice/rust/test/Cargo.toml --json | jq '.data[0].totals.lines.percent')
+          ACTUAL=$(printf '%.5s\n' $ACTUAL)
+          EXPECT=${{vars.COVERAGE_THRESHOLD}}
+          echo "actual unit test coverage: $ACTUAL, expected: $EXPECT"
+          if (( $(echo "$EXPECT > $ACTUAL" |bc -l) )); then
+            echo "unit-test coverage is lower than expected, fail"
+            return 1
+          fi
+
+      - uses: int128/hide-comment-action@v1
+        with:
+          contains: "Missed Regions"
+          token: ${{secrets.GITHUB_TOKEN}}
+
+      - uses: actions/github-script@v7
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const content = require('fs').readFileSync("report.txt", 'utf8');
+            const body = "```\n" + content + "\n```"
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            })
+      # - uses: mshick/add-pr-comment@v2
+      #   with:
+      #     message: |
+      #       ```\n${{ steps.report.outputs.report }}\n```
