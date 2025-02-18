@@ -8,7 +8,7 @@ name: Build for staging env
 
 jobs:
   main_bump:
-    name: Linux ARMv7
+    name: Bump main
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -28,10 +28,10 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 2
-      - run: |
+      - name: compare version
+        run: |
           git fetch origin master:refs/remotes/origin/master
-          git diff --name-only origin/master HEAD --exit-code
-          echo "DIFF_RESULT=$?" >> $GITHUB_ENV
+          echo "DIFF_RESULT=$(git diff --name-only origin/master HEAD | wc -l| tr -d " ")" >> $GITHUB_ENV
       - name: Create branch to bump main branch
         if: ${{ '0' == env.DIFF_RESULT }}
         run: |
