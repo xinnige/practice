@@ -1,5 +1,5 @@
 fn main() {
-    println!("rust test")
+    println!("rust test..")
 }
 
 #[cfg(test)]
