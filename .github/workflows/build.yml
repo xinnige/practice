@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - main
+      - master
 
 name: build-dev
 
@@ -57,14 +57,14 @@ jobs:
         with:
           files_yaml: |
             rust:
-              - rust/test/src/**
+              - ./practice/rust/test/src/**
 
       - name: Version bump
         if: steps.changed-files-yaml.outputs.rust_any_changed == 'true'
         run: |
           cargo set-version --bump patch -p test --manifest-path ./practice/rust/test/Cargo.toml
-          echo "COMMIT_VERSION=$(cargo-get --entry rust/test/Cargo.toml package.version)" >> $GITHUB_ENV
-          echo "RUST_COMMIT_VERSION=$(cargo-get --entry rust/test/Cargo.toml package.version)" >> $GITHUB_ENV
+          echo "COMMIT_VERSION=$(cargo-get --entry ./practice/rust/test/Cargo.toml package.version)" >> $GITHUB_ENV
+          echo "RUST_COMMIT_VERSION=$(cargo-get --entry ./practice/rust/test/Cargo.toml package.version)" >> $GITHUB_ENV
 
       # commit bump version
       - uses: stefanzweifel/git-auto-commit-action@v4
