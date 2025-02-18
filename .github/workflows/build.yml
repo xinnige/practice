@@ -35,7 +35,7 @@ jobs:
           override: true
       - uses: Swatinem/rust-cache@v2
         with:
-          cache-directories: "~/.cargo/bin/"
+          cache-directories: "~/practice/rust/.cargo/bin/"
       - run: |
           curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
       - uses: actions-rs/cargo@v1
@@ -96,11 +96,3 @@ jobs:
           files: |
             ./practice/rust/test/target/debug/test
           args: -q --brute
-
-      - name: Compress binary
-        if: steps.changed-files-yaml.outputs.rust_any_changed == 'true'
-        run: |
-          mkdir -p dist
-          gzip -c ./practice/rust/test/target/debug/test > dist/test-${{ env.RUST_VERSION }}.gz
-          echo -n "${{ secrets.SIGN_PRIV }}" | base64 -d > sign_priv.key
-          ~/.cargo/bin/zipsign sign tar dist/test-${{ env.RUST_VERSION }}.gz sign_priv.key
