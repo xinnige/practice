@@ -7,12 +7,40 @@ on:
 name: Build for staging env
 
 jobs:
-  linux_arm7:
+  main_bump:
     name: Linux ARMv7
     runs-on: ubuntu-latest
     permissions:
       contents: write
       pull-requests: write
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 2
+      - run: |
+          echo "MAIN_COMMIT_HASH=$(git rev-parse origin/main)" >> $GITHUB_ENV
+      - name: Create branch to bump main branch
+        if: ${{ github.event.head_commit.id == env.MAIN_COMMIT_HASH }}
+        run: |
+          cargo set-version --bump minor -p test --manifest-path ./practice/rust/test/Cargo.toml
+          echo "RUST_VERSION=$(cargo-get --entry ./practice/rust/test/Cargo.toml package.version)" >> $GITHUB_ENV
+      - name: Create Pull Request
+        if: ${{ github.event.head_commit.id == env.MAIN_COMMIT_HASH }}
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: bump/${{ env.RUST_VERSION }}
+          base: master
+          commit-message: Bump version ${{ env.RUST_VERSION }}
+          delete-branch: true
+          title: "[git-action] Merge bump major version ${{ env.RUST_VERSION }}"
+          body: |
+            Bump major version to ${{ env.RUST_VERSION }}
+  linux_arm7:
+    name: Linux ARMv7
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
     # prevent endless github action loop
     if: ${{ github.event.head_commit.committer.name != 'github-actions[bot]' }}
     steps:
@@ -86,24 +114,3 @@ jobs:
           files: |
             ./practice/rust/test/target/debug/test
           args: -q --brute
-
-      - run: |
-          echo "MAIN_COMMIT_HASH=$(git rev-parse origin/main)" >> $GITHUB_ENV
-
-      - name: Create branch to bump main branch
-        if: ${{ github.event.head_commit.id == env.MAIN_COMMIT_HASH }}
-        run: |
-          cargo set-version --bump minor -p test --manifest-path ./practice/rust/test/Cargo.toml
-          echo "RUST_VERSION=$(cargo-get --entry ./practice/rust/test/Cargo.toml package.version)" >> $GITHUB_ENV
-
-      - name: Create Pull Request
-        if: ${{ github.event.head_commit.id == env.MAIN_COMMIT_HASH }}
-        uses: peter-evans/create-pull-request@v7
-        with:
-          branch: bump/${{ env.RUST_VERSION }}
-          base: master
-          commit-message: Bump version ${{ env.RUST_VERSION }}
-          delete-branch: true
-          title: "[git-action] Merge bump major version ${{ env.RUST_VERSION }}"
-          body: |
-            Bump major version to ${{ env.RUST_VERSION }}
