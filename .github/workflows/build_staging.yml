@@ -14,20 +14,31 @@ jobs:
       contents: write
       pull-requests: write
     steps:
+      - run: |
+          curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+      - uses: actions-rs/cargo@v1
+        with:
+          command: binstall
+          args: -y cargo-get
+      - uses: actions-rs/cargo@v1
+        with:
+          command: binstall
+          args: -y cargo-edit
       - uses: actions/checkout@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 2
       - run: |
           git fetch origin master:refs/remotes/origin/master
-          echo "MAIN_COMMIT_HASH=$(git rev-parse origin/master)" >> $GITHUB_ENV
+          git diff --name-only origin/master HEAD --exit-code
+          echo "DIFF_RESULT=$?" >> $GITHUB_ENV
       - name: Create branch to bump main branch
-        if: ${{ github.event.head_commit.id == env.MAIN_COMMIT_HASH }}
+        if: ${{ '0' == env.DIFF_RESULT }}
         run: |
           cargo set-version --bump minor -p test --manifest-path ./practice/rust/test/Cargo.toml
           echo "RUST_VERSION=$(cargo-get --entry ./practice/rust/test/Cargo.toml package.version)" >> $GITHUB_ENV
       - name: Create Pull Request
-        if: ${{ github.event.head_commit.id == env.MAIN_COMMIT_HASH }}
+        if: ${{ '0' == env.DIFF_RESULT }}
         uses: peter-evans/create-pull-request@v7
         with:
           branch: bump/${{ env.RUST_VERSION }}
