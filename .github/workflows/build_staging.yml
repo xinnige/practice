@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
     # prevent endless github action loop
     if: ${{ github.event.head_commit.committer.name != 'github-actions[bot]' }}
     steps:
@@ -43,7 +44,7 @@ jobs:
 
       - name: update version in cargo
         run: |
-          cargo set-version --bump minor -p test --manifest-path ./practice/rust/test/Cargo.toml
+          cargo set-version --bump patch -p test --manifest-path ./practice/rust/test/Cargo.toml
           echo "RUST_VERSION=$(cargo-get --entry ./practice/rust/test/Cargo.toml package.version)" >> $GITHUB_ENV
 
       - name: capture last changelog change
@@ -85,3 +86,14 @@ jobs:
           files: |
             ./practice/rust/test/target/debug/test
           args: -q --brute
+
+      - name: Create branch to bump main branch
+        run: |
+          cargo set-version --bump minor -p test --manifest-path ./practice/rust/test/Cargo.toml
+          echo "RUST_VERSION=$(cargo-get --entry ./practice/rust/test/Cargo.toml package.version)" >> $GITHUB_ENV
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: bump/${{ env.RUST_VERSION }}
+          commit-message: Bump version ${{ env.RUST_VERSION }}
