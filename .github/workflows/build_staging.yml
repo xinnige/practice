@@ -8,7 +8,7 @@ name: Build for staging env
 
 jobs:
   main_bump:
-    name: Linux ARMv7
+    name: Bump main
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -28,17 +28,22 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 2
+      - name: compare version
+        run: |
+          git fetch origin master:refs/remotes/origin/master
       - run: |
           git fetch origin master:refs/remotes/origin/master
-          git diff --name-only origin/master HEAD --exit-code
-          echo "DIFF_RESULT=$?" >> $GITHUB_ENV
+          git show origin/master:practice/rust/test/Cargo.toml > /tmp/Cargo.toml
+          echo "REMOTE_VERSION=$(cargo-get --entry /tmp/Cargo.toml package.version --major --minor --delimiter=".")" >> $GITHUB_ENV
+          echo "LOCAL_VERSION=$(cargo-get --entry ./practice/rust/test/Cargo.toml package.version --major --minor --delimiter=".")" >> $GITHUB_ENV
+
       - name: Create branch to bump main branch
-        if: ${{ '0' == env.DIFF_RESULT }}
+        if: ${{ env.LOCAL_VERSION == env.REMOTE_VERSION }}
         run: |
           cargo set-version --bump minor -p test --manifest-path ./practice/rust/test/Cargo.toml
           echo "RUST_VERSION=$(cargo-get --entry ./practice/rust/test/Cargo.toml package.version)" >> $GITHUB_ENV
       - name: Create Pull Request
-        if: ${{ '0' == env.DIFF_RESULT }}
+        if: ${{ env.LOCAL_VERSION == env.REMOTE_VERSION }}
         uses: peter-evans/create-pull-request@v7
         with:
           branch: bump/${{ env.RUST_VERSION }}
