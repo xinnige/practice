@@ -19,7 +19,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 2
       - run: |
-          echo "MAIN_COMMIT_HASH=$(git rev-parse origin/main)" >> $GITHUB_ENV
+          echo "MAIN_COMMIT_HASH=$(git rev-parse origin/master)" >> $GITHUB_ENV
       - name: Create branch to bump main branch
         if: ${{ github.event.head_commit.id == env.MAIN_COMMIT_HASH }}
         run: |
